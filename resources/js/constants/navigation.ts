@@ -1,5 +1,5 @@
 import { NavItem } from '@/types';
-import { BookOpen, Folder, KeyRound, LayoutGrid, Rocket, UserRoundCog, UsersRound } from 'lucide-react';
+import { BookOpen, BrainCircuit, Folder, KeyRound, LayoutGrid, MessagesSquare, Rocket, UserRoundCog, UsersRound } from 'lucide-react';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -7,6 +7,18 @@ export const mainNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
         permission: ['dashboard.index'],
+    },
+    {
+        title: 'Chat History',
+        href: '/chat-histories',
+        icon: MessagesSquare,
+        permission: ['chat-histories.index'],
+    },
+    {
+        title: 'Knowledge Base',
+        href: '/knowledge-bases',
+        icon: BrainCircuit,
+        permission: ['knowledge-bases.index'],
     },
     {
         title: 'Permission',

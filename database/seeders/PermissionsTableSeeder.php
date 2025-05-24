@@ -32,5 +32,14 @@ class PermissionsTableSeeder extends Seeder
 
         //permission permissions
         Permission::create(['name' => 'permissions.index', 'guard_name' => 'web']);
+
+        //permission knowledge bases
+        Permission::create(['name' => 'knowledge-bases.index', 'guard_name' => 'web']);
+        Permission::create(['name' => 'knowledge-bases.create', 'guard_name' => 'web']);
+        Permission::create(['name' => 'knowledge-bases.edit', 'guard_name' => 'web']);
+        Permission::create(['name' => 'knowledge-bases.delete', 'guard_name' => 'web']);
+
+        //permission chat histories
+        Permission::create(['name' => 'chat-histories.index', 'guard_name' => 'web']);
     }
 }

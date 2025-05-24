@@ -12,11 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('knowledge_bases', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('title', 255);
             $table->text('content');
             $table->tinyInteger('status')->default(1)->comment('1 = Active, 0 = Inactive');
-            $table->timestamps();
+            $table->datetime('created_at')->nullable();
+            $table->string('created_by')->nullable();
+            $table->datetime('updated_at')->nullable();
+            $table->string('updated_by')->nullable();
+            $table->datetime('deleted_at')->nullable();
+            $table->string('deleted_by')->nullable();
         });
     }
 

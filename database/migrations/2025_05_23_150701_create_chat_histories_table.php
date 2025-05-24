@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('phone', 20)->nullable();
             $table->text('question')->nullable();
             $table->text('answer')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 

@@ -2,23 +2,23 @@
 
 namespace App\Services;
 
-use Spatie\Permission\Models\Role;
+use App\Models\KnowledgeBase;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class RoleService
+class KnowledgeBaseService
 {
     private const DEFAULT_PER_PAGE = 10;
-    private const DEFAULT_SORT_BY = 'name';
+    private const DEFAULT_SORT_BY = 'title';
     private const DEFAULT_SORT_DIR = 'asc';
-    private const FILTERABLE_COLUMNS = ['name', 'created_at'];
+    private const FILTERABLE_COLUMNS = ['title', 'content', 'status', 'created_at'];
 
     /**
-     * Get paginated roles with filters.
+     * Get paginated knowledge bases with filters.
      *
      * @param array $filters
      * @return array
      */
-    public function getPaginatedRoles(array $filters): array
+    public function getPaginatedKnowledgeBases(array $filters): array
     {
         $perPage = (int) ($filters['per_page'] ?? self::DEFAULT_PER_PAGE);
         $page = (int) ($filters['page'] ?? 1);
@@ -27,7 +27,7 @@ class RoleService
 
         $search = trim($filters['search'] ?? '');
 
-        $query = Role::query();
+        $query = KnowledgeBase::query();
 
         $query->when($search, function ($query) use ($search) {
             $query->where(function ($subQuery) use ($search) {
@@ -60,105 +60,113 @@ class RoleService
     }
 
     /**
-     * Create a new role and assign permissions.
+     * Create new knowledge base.
      *
      * @param array $data
-     * @return array
+     * @return KnowledgeBase
      */
-    public function createRole(array $data): array
+    public function createKnowledgeBase(array $data): array
     {
         try {
-            $role = \DB::transaction(function () use ($data) {
-                $role = Role::create([
-                    'name'          => $data['name'],
-                    'created_by'    => auth()->id()
+            $knowledgeBase = \DB::transaction(function () use ($data) {
+                $knowledgeBase = KnowledgeBase::create([
+                    'title'         => $data['title'],
+                    'content'       => $data['content'],
+                    'status'        => $data['status'],
+                    'created_by'    => auth()->id(),
                 ]);
-                $role->givePermissionTo($data['permissions']);
 
-                return $role;
+                return $knowledgeBase;
             });
 
             return [
-                'success'   => true,
-                'message'   => 'Role created successfully.',
-                'role'      => $role,
+                'success'       => true,
+                'message'       => 'Knowledge base created successfully.',
+                'knowledgeBase' => $knowledgeBase,
             ];
         } catch (\Exception $e) {
-            \Log::error('Failed to create role: ' . $e->getMessage());
+            \Log::error('Failed to create knowledge base: ' . $e->getMessage());
             return [
                 'success'   => false,
-                'message'   => 'Failed to create role.',
+                'message'   => 'Failed to create knowledge base.',
             ];
         }
     }
 
     /**
-     * Update role and sync permissions.
+     * Update knowledge base data.
      *
-     * @param Role $role
+     * @param KnowledgeBase $knowledgeBase
      * @param array $data
-     * @return Role
+     * @return KnowledgeBase
      */
-    public function updateRole(Role $role, array $data): array
+    public function updateKnowledgeBase(KnowledgeBase $knowledgeBase, array $data): array
     {
         try {
-            \DB::transaction(function () use ($role, $data) {
-                $role->update([
-                    'name'          => $data['name'],
-                    'updated_by'    => auth()->id()
-                ]);
-                $role->syncPermissions($data['permissions']);
+            $updateData = [
+                'title'         => $data['title'],
+                'content'       => $data['content'],
+                'status'        => $data['status'],
+                'updated_by'    => auth()->id(),
+            ];
+
+            if (!empty($data['password'])) {
+                $updateData['password'] = bcrypt($data['password']);
+            }
+
+            \DB::transaction(function () use ($knowledgeBase, $updateData, $data) {
+                $knowledgeBase->update($updateData);
             });
 
             return [
                 'success'   => true,
-                'message'   => 'Role updated successfully.',
-                'data'      => $role->fresh(),
+                'message'   => 'Knowledge base updated successfully.',
+                'data'      => $knowledgeBase->fresh(),
             ];
         } catch (ModelNotFoundException $e) {
             return [
                 'success'   => false,
-                'message'   => 'Role not found.',
+                'message'   => 'Knowledge base not found.',
             ];
         } catch (\Exception $e) {
-            \Log::error('Failed to update role: ' . $e->getMessage());
+            \Log::error('Failed to update knowledge base: ' . $e->getMessage());
             return [
                 'success'   => false,
-                'message'   => 'Failed to update role.',
+                'message'   => 'Failed to update knowledge base.',
             ];
         }
     }
 
     /**
-     * Delete role by ID.
+     * Delete knowledge base by ID.
      *
      * @param string $id
      * @return array
      */
-    public function deleteRole(string $id): array
+    public function deleteKnowledgeBase(string $id): array
     {
         try {
-            $role = Role::findOrFail($id);
+            $knowledgeBase = KnowledgeBase::findOrFail($id);
 
-            return \DB::transaction(function () use ($role) {
-                $role->update(['deleted_by' => auth()->id()]);
-                $role->delete();
+            return \DB::transaction(function () use ($knowledgeBase) {
+                $knowledgeBase->update(['deleted_by' => auth()->id()]);
+                $knowledgeBase->delete();
 
                 return [
                     'success'   => true,
-                    'message'   => 'Role deleted successfully.'
+                    'message'   => 'Knowledge base deleted successfully.'
                 ];
             });
         } catch (ModelNotFoundException $e) {
             return [
                 'success'   => false,
-                'message'   => 'Role not found.'
+                'message'   => 'Knowledge base not found.'
             ];
         } catch (\Exception $e) {
-            \Log::error('Failed to delete role: ' . $e->getMessage());
+            \Log::error('Failed to delete knowledge base: ' . $e->getMessage());
             return [
                 'success'   => false,
-                'message'   => 'Failed to delete role.'
+                'message'   => 'Failed to delete knowledge base.'
             ];
         }
     }

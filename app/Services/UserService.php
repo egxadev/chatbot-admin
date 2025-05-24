@@ -10,7 +10,7 @@ class UserService
     private const DEFAULT_PER_PAGE = 10;
     private const DEFAULT_SORT_BY = 'name';
     private const DEFAULT_SORT_DIR = 'asc';
-    private const FILTERABLE_COLUMNS = ['id', 'name', 'email', 'created_at'];
+    private const FILTERABLE_COLUMNS = ['name', 'email', 'created_at'];
 
     /**
      * Get paginated users with filters.
@@ -39,17 +39,17 @@ class UserService
 
         $query->orderBy($sortBy, $sortDir);
 
-        $users = $query->paginate($perPage, ['*'], 'page', $page);
+        $data = $query->paginate($perPage, ['*'], 'page', $page);
 
         return [
-            'data'  => $users->items(),
+            'data'  => $data->items(),
             'meta'  => [
-                'current_page'  => $users->currentPage(),
-                'last_page'     => $users->lastPage(),
-                'per_page'      => $users->perPage(),
-                'total'         => $users->total(),
-                'from'          => $users->firstItem(),
-                'to'            => $users->lastItem(),
+                'current_page'  => $data->currentPage(),
+                'last_page'     => $data->lastPage(),
+                'per_page'      => $data->perPage(),
+                'total'         => $data->total(),
+                'from'          => $data->firstItem(),
+                'to'            => $data->lastItem(),
             ],
             'filters' => [
                 'search' => $search,
