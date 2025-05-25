@@ -81,17 +81,10 @@ class UserService
                 return $user;
             });
 
-            return [
-                'success'   => true,
-                'message'   => 'User created successfully.',
-                'user'      => $user,
-            ];
+            return responseSuccess($user, 'User created successfully.');
         } catch (\Exception $e) {
             \Log::error('Failed to create user: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to create user.',
-            ];
+            return responseError('Failed to create user.');
         }
     }
 
@@ -120,22 +113,12 @@ class UserService
                 $user->syncRoles($data['roles']);
             });
 
-            return [
-                'success'   => true,
-                'message'   => 'User updated successfully.',
-                'data'      => $user->fresh(),
-            ];
+            return responseSuccess($user->fresh(), 'User updated successfully.');
         } catch (ModelNotFoundException $e) {
-            return [
-                'success'   => false,
-                'message'   => 'User not found.',
-            ];
+            return responseNotFound('User not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to update user: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to update user.',
-            ];
+            return responseError('Failed to update user.');
         }
     }
 
@@ -154,22 +137,13 @@ class UserService
                 $user->update(['deleted_by' => auth()->id()]);
                 $user->delete();
 
-                return [
-                    'success'   => true,
-                    'message'   => 'User deleted successfully.'
-                ];
+                return responseSuccess($user, 'User deleted successfully.');
             });
         } catch (ModelNotFoundException $e) {
-            return [
-                'success'   => false,
-                'message'   => 'User not found.'
-            ];
+            return responseNotFound('User not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to delete user: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to delete user.'
-            ];
+            return responseError('Failed to delete user.');
         }
     }
 }

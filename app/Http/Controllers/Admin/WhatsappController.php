@@ -8,6 +8,11 @@ use App\Events\QrCodeReceived;
 
 class WhatsappController extends Controller
 {
+    /**
+     * Display QR code scanning page.
+     * 
+     * @return \Inertia\Response
+     */
     public function scanQrCode()
     {
         $breadcrumbs = [
@@ -22,21 +27,29 @@ class WhatsappController extends Controller
         ));
     }
 
+    /**
+     * Handle QR code received from request.
+     * Decrypts QR code if status is 'qr' and broadcasts via event.
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function QrCodeReceived(Request $request)
     {
         try {
-            $encryptedQR = $request->input('qr_code');
-            $decryptedQR = decryptData($encryptedQR);
+            if ($request->input('status') == 'qr') {
+                $encryptedQR = $request->input('qr_code');
+                $decryptedQR = decryptData($encryptedQR);
+            } else {
+                $decryptedQR = null;
+            }
 
-            \Log::info($decryptedQR);
+            QrCodeReceived::dispatch($decryptedQR);
 
-            // Broadcast the QR code to all clients
-            broadcast(new QrCodeReceived($decryptedQR))->toOthers();
-
-            return response()->json(['message' => 'QR code received and decrypted successfully']);
+            return response()->json(responseSuccess('QR code received.'));
         } catch (\Exception $e) {
             \Log::error($e->getMessage());
-            return response()->json(['error' => 'Failed to process QR code'], 500);
+            return response()->json(responseError('Failed to process QR code'));
         }
     }
 }

@@ -78,17 +78,10 @@ class RoleService
                 return $role;
             });
 
-            return [
-                'success'   => true,
-                'message'   => 'Role created successfully.',
-                'role'      => $role,
-            ];
+            return responseSuccess($role, 'Role created successfully.');
         } catch (\Exception $e) {
             \Log::error('Failed to create role: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to create role.',
-            ];
+            return responseError('Failed to create role.');
         }
     }
 
@@ -110,22 +103,12 @@ class RoleService
                 $role->syncPermissions($data['permissions']);
             });
 
-            return [
-                'success'   => true,
-                'message'   => 'Role updated successfully.',
-                'data'      => $role->fresh(),
-            ];
+            return responseSuccess($role->fresh(), 'Role updated successfully.');
         } catch (ModelNotFoundException $e) {
-            return [
-                'success'   => false,
-                'message'   => 'Role not found.',
-            ];
+            return responseNotFound('Role not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to update role: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to update role.',
-            ];
+            return responseError('Failed to update role.');
         }
     }
 
@@ -144,22 +127,13 @@ class RoleService
                 $role->update(['deleted_by' => auth()->id()]);
                 $role->delete();
 
-                return [
-                    'success'   => true,
-                    'message'   => 'Role deleted successfully.'
-                ];
+                return responseSuccess($role, 'Role deleted successfully.');
             });
         } catch (ModelNotFoundException $e) {
-            return [
-                'success'   => false,
-                'message'   => 'Role not found.'
-            ];
+            return responseNotFound('Role not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to delete role: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to delete role.'
-            ];
+            return responseError('Failed to delete role.');
         }
     }
 }

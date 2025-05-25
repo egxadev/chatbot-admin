@@ -19,8 +19,18 @@ class QrCodeReceived implements ShouldBroadcast
         $this->qrCode = $qrCode;
     }
 
+    public function broadcastWith()
+    {
+        return ['qrCode' => $this->qrCode];
+    }
+
     public function broadcastOn()
     {
         return new Channel('qr-code');
     }
-} 
+
+    public function broadcastAs()
+    {
+        return 'qr.received';
+    }
+}

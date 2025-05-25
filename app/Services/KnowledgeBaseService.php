@@ -79,17 +79,10 @@ class KnowledgeBaseService
                 return $knowledgeBase;
             });
 
-            return [
-                'success'       => true,
-                'message'       => 'Knowledge base created successfully.',
-                'knowledgeBase' => $knowledgeBase,
-            ];
+            return responseSuccess($knowledgeBase, 'Knowledge base created successfully.');
         } catch (\Exception $e) {
             \Log::error('Failed to create knowledge base: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to create knowledge base.',
-            ];
+            return responseError('Failed to create knowledge base.');
         }
     }
 
@@ -118,22 +111,12 @@ class KnowledgeBaseService
                 $knowledgeBase->update($updateData);
             });
 
-            return [
-                'success'   => true,
-                'message'   => 'Knowledge base updated successfully.',
-                'data'      => $knowledgeBase->fresh(),
-            ];
+            return responseSuccess($knowledgeBase->fresh(), 'Knowledge base updated successfully.');
         } catch (ModelNotFoundException $e) {
-            return [
-                'success'   => false,
-                'message'   => 'Knowledge base not found.',
-            ];
+            return responseNotFound('Knowledge base not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to update knowledge base: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to update knowledge base.',
-            ];
+            return responseError('Failed to update knowledge base.');
         }
     }
 
@@ -152,22 +135,13 @@ class KnowledgeBaseService
                 $knowledgeBase->update(['deleted_by' => auth()->id()]);
                 $knowledgeBase->delete();
 
-                return [
-                    'success'   => true,
-                    'message'   => 'Knowledge base deleted successfully.'
-                ];
+                return responseSuccess($knowledgeBase, 'Knowledge base deleted successfully.');
             });
         } catch (ModelNotFoundException $e) {
-            return [
-                'success'   => false,
-                'message'   => 'Knowledge base not found.'
-            ];
+            return responseNotFound('Knowledge base not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to delete knowledge base: ' . $e->getMessage());
-            return [
-                'success'   => false,
-                'message'   => 'Failed to delete knowledge base.'
-            ];
+            return responseError('Failed to delete knowledge base.');
         }
     }
 }
