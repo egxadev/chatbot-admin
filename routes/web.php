@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\WhatsappController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ChatHistoryController;
@@ -37,6 +38,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/chat-histories', [ChatHistoryController::class, 'index'])
         ->middleware('permission:chat-histories.index')
         ->name('chat-histories.index');
+
+    // scan qr code
+    Route::get('/scan', [WhatsappController::class, 'scanQrCode'])->name('scan.index');
 });
 
 require __DIR__ . '/settings.php';
