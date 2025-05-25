@@ -32,15 +32,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // knowledge bases
     Route::resource('/knowledge-bases', KnowledgeBaseController::class)
-        ->middleware('permission:knowledge-bases.index|knowledge-bases.create|knowledge-bases.edit|knowledge-bases.delete');
+        ->middleware('permission:knowledge_bases.index|knowledge_bases.create|knowledge_bases.edit|knowledge_bases.delete');
 
     // chat histories
     Route::get('/chat-histories', [ChatHistoryController::class, 'index'])
-        ->middleware('permission:chat-histories.index')
+        ->middleware('permission:chat_histories.index')
         ->name('chat-histories.index');
 
     // scan qr code
-    Route::get('/scan', [WhatsappController::class, 'scanQrCode'])->name('scan.index');
+    Route::get('/scan', [WhatsappController::class, 'scanQrCode'])->name('scan.index')
+        ->middleware('permission:scan.index');
 });
 
 require __DIR__ . '/settings.php';

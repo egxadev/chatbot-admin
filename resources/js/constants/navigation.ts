@@ -1,72 +1,64 @@
 import { NavItem } from '@/types';
-import { BookOpen, BrainCircuit, Folder, KeyRound, LayoutGrid, MessagesSquare, Rocket, UserRoundCog, UsersRound } from 'lucide-react';
+import { BrainCircuit, ChartArea, MessagesSquare, QrCode, UserRoundCog } from 'lucide-react';
 
 export const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: '/dashboard',
-        icon: LayoutGrid,
+        icon: ChartArea,
         permission: ['dashboard.index'],
+    },
+    {
+        title: 'Scan QR Code',
+        href: '/scan',
+        icon: QrCode,
+        permission: ['scan.index'],
     },
     {
         title: 'Chat History',
         href: '/chat-histories',
         icon: MessagesSquare,
-        permission: ['chat-histories.index'],
+        permission: ['chat_histories.index'],
     },
     {
         title: 'Knowledge Base',
         href: '/knowledge-bases',
         icon: BrainCircuit,
-        permission: ['knowledge-bases.index'],
+        permission: ['knowledge_bases.index'],
     },
     {
-        title: 'Permission',
-        href: '/permissions',
-        icon: KeyRound,
-        permission: ['permissions.index'],
-    },
-    {
-        title: 'Role',
-        href: '/roles',
-        icon: UserRoundCog,
-        permission: ['roles.index'],
-    },
-    {
-        title: 'User',
-        href: '/users',
-        icon: UsersRound,
-        permission: ['users.index'],
-    },
-    {
-        title: 'Resources',
+        title: 'User Management',
         href: '#',
-        icon: Rocket,
-        permission: ['users.index'],
+        icon: UserRoundCog,
+        permission: ['permissions.index', 'roles.index', 'users.index'],
         items: [
             {
-                title: 'Repository',
-                href: 'https://github.com/laravel/react-starter-kit',
+                title: 'Permission',
+                href: '/permissions',
             },
             {
-                title: 'Documentation',
-                href: 'https://laravel.com/docs/starter-kits',
+                title: 'Role',
+                href: '/roles',
+            },
+            {
+                title: 'User',
+                href: '/users',
             },
         ],
     },
 ];
 
 export const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits',
-        icon: BookOpen,
-    },
+    // {
+    //     title: 'Repository',
+    //     href: 'https://github.com/laravel/react-starter-kit',
+    //     icon: Folder,
+    // },
+    // {
+    //     title: 'Documentation',
+    //     href: 'https://laravel.com/docs/starter-kits',
+    //     icon: BookOpen,
+    // },
 ];
 
 export const settingsNavItems: NavItem[] = [
