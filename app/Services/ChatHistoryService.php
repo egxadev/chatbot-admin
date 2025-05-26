@@ -8,7 +8,7 @@ class ChatHistoryService
 {
     private const DEFAULT_PER_PAGE = 10;
     private const DEFAULT_SORT_BY = 'created_at';
-    private const DEFAULT_SORT_DIR = 'asc';
+    private const DEFAULT_SORT_DIR = 'desc';
     private const FILTERABLE_COLUMNS = ['question', 'answer', 'created_at'];
 
     /**

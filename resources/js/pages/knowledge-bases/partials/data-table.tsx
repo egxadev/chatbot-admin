@@ -47,7 +47,7 @@ export const columns: ColumnDef<KnowledgeBase>[] = [
                 </Button>
             );
         },
-        cell: ({ row }) => <div>{row.getValue('status')}</div>,
+        cell: ({ row }) => <div>{row.getValue('status') === 1 ? 'Active' : 'Inactive'}</div>,
     },
     {
         id: 'actions',
