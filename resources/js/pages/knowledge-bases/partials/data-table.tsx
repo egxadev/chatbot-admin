@@ -89,13 +89,13 @@ const ActionCell = ({ data }: { data: KnowledgeBase }) => {
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
 
-                {hasAnyPermission(['knowledge-bases.edit']) && (
+                {hasAnyPermission(['knowledge_bases.edit']) && (
                     <Link href={route('knowledge-bases.edit', data.id)}>
                         <DropdownMenuItem>Edit</DropdownMenuItem>
                     </Link>
                 )}
 
-                {hasAnyPermission(['knowledge-bases.delete']) && (
+                {hasAnyPermission(['knowledge_bases.delete']) && (
                     <AlertDialog>
                         <AlertDialogTrigger className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-neutral-800">
                             Delete
