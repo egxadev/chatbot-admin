@@ -30,7 +30,7 @@ export default function ScanIndex() {
             <Head title={breadcrumbs[0].title} />
 
             <div className="px-4 py-6">
-                <div className="overflow-hidden bg-neutral-900 sm:rounded-lg">
+                <div className="overflow-hidden bg-muted dark:bg-neutral-900 sm:rounded-lg">
                     <div className="p-6 text-gray-900 dark:text-neutral-200">
                         <div className="mt-4">
                             <h2 className="mb-2 text-lg font-semibold">Generated QR Code:</h2>
