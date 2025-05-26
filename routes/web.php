@@ -10,7 +10,7 @@ use App\Http\Controllers\Admin\ChatHistoryController;
 use App\Http\Controllers\Admin\KnowledgeBaseController;
 
 Route::get('/', function () {
-    return inertia('welcome');
+    return redirect()->route('login');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
