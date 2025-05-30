@@ -143,9 +143,6 @@ export default function ChatHistoryIndex() {
         },
     });
 
-    console.log(data);
-    
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={breadcrumbs[0].title} />
