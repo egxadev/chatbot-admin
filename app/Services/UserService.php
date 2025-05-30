@@ -3,10 +3,13 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Traits\ResponseFormatter;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserService
 {
+    use ResponseFormatter;
+
     private const DEFAULT_PER_PAGE = 10;
     private const DEFAULT_SORT_BY = 'name';
     private const DEFAULT_SORT_DIR = 'asc';
@@ -41,22 +44,18 @@ class UserService
 
         $data = $query->paginate($perPage, ['*'], 'page', $page);
 
-        return [
-            'data'  => $data->items(),
-            'meta'  => [
-                'current_page'  => $data->currentPage(),
-                'last_page'     => $data->lastPage(),
-                'per_page'      => $data->perPage(),
-                'total'         => $data->total(),
-                'from'          => $data->firstItem(),
-                'to'            => $data->lastItem(),
-            ],
-            'filters' => [
-                'search' => $search,
-                'sort_by' => $sortBy,
-                'sort_dir' => $sortDir,
-            ]
-        ];
+        return $this->paginatedResponse($data->items(), [
+            'current_page'  => $data->currentPage(),
+            'last_page'     => $data->lastPage(),
+            'per_page'      => $data->perPage(),
+            'total'         => $data->total(),
+            'from'          => $data->firstItem(),
+            'to'            => $data->lastItem(),
+        ], [
+            'search'        => $search,
+            'sort_by'       => $sortBy,
+            'sort_dir'      => $sortDir,
+        ]);
     }
 
     /**
@@ -68,7 +67,7 @@ class UserService
     public function createUser(array $data): array
     {
         try {
-            $user = \DB::transaction(function () use ($data) {
+            $createdData = \DB::transaction(function () use ($data) {
                 $user = User::create([
                     'name'          => $data['name'],
                     'email'         => $data['email'],
@@ -81,10 +80,10 @@ class UserService
                 return $user;
             });
 
-            return responseSuccess($user, 'User created successfully.');
+            return $this->successResponse($createdData, 'User created successfully.');
         } catch (\Exception $e) {
             \Log::error('Failed to create user: ' . $e->getMessage());
-            return responseError('Failed to create user.');
+            return $this->errorResponse('Failed to create user.');
         }
     }
 
@@ -98,27 +97,28 @@ class UserService
     public function updateUser(User $user, array $data): array
     {
         try {
-            $updateData = [
-                'name'          => $data['name'],
-                'email'         => $data['email'],
-                'updated_by'    => auth()->id(),
-            ];
-
             if (!empty($data['password'])) {
-                $updateData['password'] = bcrypt($data['password']);
+                $data['password'] = bcrypt($data['password']);
             }
 
-            \DB::transaction(function () use ($user, $updateData, $data) {
-                $user->update($updateData);
+            $updatedData = \DB::transaction(function () use ($user, $data) {
+                $user->update([
+                    'name'          => $data['name'],
+                    'email'         => $data['email'],
+                    'password'      => $data['password'] ?? $user->password,
+                    'updated_by'    => auth()->id(),
+                ]);
                 $user->syncRoles($data['roles']);
-            });
 
-            return responseSuccess($user->fresh(), 'User updated successfully.');
+                return $user;
+            });
+            
+            return $this->successResponse($updatedData, 'User updated successfully.');
         } catch (ModelNotFoundException $e) {
-            return responseNotFound('User not found.');
+            return $this->errorResponse('User not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to update user: ' . $e->getMessage());
-            return responseError('Failed to update user.');
+            return $this->errorResponse('Failed to update user.');
         }
     }
 
@@ -132,18 +132,30 @@ class UserService
     {
         try {
             $user = User::findOrFail($id);
+            $currentUser = auth()->user();
+            $isSelfDelete = $user->id === $currentUser->id;
 
-            return \DB::transaction(function () use ($user) {
-                $user->update(['deleted_by' => auth()->id()]);
+            \DB::transaction(function () use ($user, $currentUser) {
+                $user->update(['deleted_by' => $currentUser->id]);
                 $user->delete();
-
-                return responseSuccess($user, 'User deleted successfully.');
             });
+
+            if ($isSelfDelete) {
+                auth()->logout();
+                session()->invalidate();
+                session()->regenerateToken();
+
+                return $this->successResponse(null, 'Your account has been deleted successfully.', [
+                    'redirect' => route('login')
+                ]);
+            }
+
+            return $this->successResponse(null, 'User deleted successfully.');
         } catch (ModelNotFoundException $e) {
-            return responseNotFound('User not found.');
+            return $this->errorResponse('User not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to delete user: ' . $e->getMessage());
-            return responseError('Failed to delete user.');
+            return $this->errorResponse('Failed to delete user.');
         }
     }
 }

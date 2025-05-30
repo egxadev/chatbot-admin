@@ -3,10 +3,13 @@
 namespace App\Services;
 
 use App\Models\KnowledgeBase;
+use App\Traits\ResponseFormatter;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class KnowledgeBaseService
 {
+    use ResponseFormatter;
+
     private const DEFAULT_PER_PAGE = 10;
     private const DEFAULT_SORT_BY = 'title';
     private const DEFAULT_SORT_DIR = 'asc';
@@ -41,22 +44,18 @@ class KnowledgeBaseService
 
         $data = $query->paginate($perPage, ['*'], 'page', $page);
 
-        return [
-            'data'  => $data->items(),
-            'meta'  => [
-                'current_page'  => $data->currentPage(),
-                'last_page'     => $data->lastPage(),
-                'per_page'      => $data->perPage(),
-                'total'         => $data->total(),
-                'from'          => $data->firstItem(),
-                'to'            => $data->lastItem(),
-            ],
-            'filters' => [
-                'search' => $search,
-                'sort_by' => $sortBy,
-                'sort_dir' => $sortDir,
-            ]
-        ];
+        return $this->paginatedResponse($data->items(), [
+            'current_page'  => $data->currentPage(),
+            'last_page'     => $data->lastPage(),
+            'per_page'      => $data->perPage(),
+            'total'         => $data->total(),
+            'from'          => $data->firstItem(),
+            'to'            => $data->lastItem(),
+        ], [
+            'search'        => $search,
+            'sort_by'       => $sortBy,
+            'sort_dir'      => $sortDir,
+        ]);
     }
 
     /**
@@ -68,7 +67,7 @@ class KnowledgeBaseService
     public function createKnowledgeBase(array $data): array
     {
         try {
-            $knowledgeBase = \DB::transaction(function () use ($data) {
+            $createdData = \DB::transaction(function () use ($data) {
                 $knowledgeBase = KnowledgeBase::create([
                     'title'         => $data['title'],
                     'content'       => $data['content'],
@@ -79,10 +78,10 @@ class KnowledgeBaseService
                 return $knowledgeBase;
             });
 
-            return responseSuccess($knowledgeBase, 'Knowledge base created successfully.');
+            return $this->successResponse($createdData, 'Knowledge base created successfully.');
         } catch (\Exception $e) {
             \Log::error('Failed to create knowledge base: ' . $e->getMessage());
-            return responseError('Failed to create knowledge base.');
+            return $this->errorResponse('Failed to create knowledge base.');
         }
     }
 
@@ -96,27 +95,23 @@ class KnowledgeBaseService
     public function updateKnowledgeBase(KnowledgeBase $knowledgeBase, array $data): array
     {
         try {
-            $updateData = [
-                'title'         => $data['title'],
-                'content'       => $data['content'],
-                'status'        => $data['status'],
-                'updated_by'    => auth()->id(),
-            ];
+            $updatedData = \DB::transaction(function () use ($knowledgeBase, $data) {
+                $knowledgeBase->update([
+                    'title'         => $data['title'],
+                    'content'       => $data['content'],
+                    'status'        => $data['status'],
+                    'updated_by'    => auth()->id(),
+                ]);
 
-            if (!empty($data['password'])) {
-                $updateData['password'] = bcrypt($data['password']);
-            }
-
-            \DB::transaction(function () use ($knowledgeBase, $updateData, $data) {
-                $knowledgeBase->update($updateData);
+                return $knowledgeBase;
             });
 
-            return responseSuccess($knowledgeBase->fresh(), 'Knowledge base updated successfully.');
+            return $this->successResponse($updatedData, 'Knowledge base updated successfully.');
         } catch (ModelNotFoundException $e) {
-            return responseNotFound('Knowledge base not found.');
+            return $this->errorResponse('Knowledge base not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to update knowledge base: ' . $e->getMessage());
-            return responseError('Failed to update knowledge base.');
+            return $this->errorResponse('Failed to update knowledge base.');
         }
     }
 
@@ -131,17 +126,17 @@ class KnowledgeBaseService
         try {
             $knowledgeBase = KnowledgeBase::findOrFail($id);
 
-            return \DB::transaction(function () use ($knowledgeBase) {
+            \DB::transaction(function () use ($knowledgeBase) {
                 $knowledgeBase->update(['deleted_by' => auth()->id()]);
                 $knowledgeBase->delete();
-
-                return responseSuccess($knowledgeBase, 'Knowledge base deleted successfully.');
             });
+
+            return $this->successResponse(null, 'Knowledge base deleted successfully.');
         } catch (ModelNotFoundException $e) {
-            return responseNotFound('Knowledge base not found.');
+            return $this->errorResponse('Knowledge base not found.');
         } catch (\Exception $e) {
             \Log::error('Failed to delete knowledge base: ' . $e->getMessage());
-            return responseError('Failed to delete knowledge base.');
+            return $this->errorResponse('Failed to delete knowledge base.');
         }
     }
 }
