@@ -1,0 +1,158 @@
+version: '3.8'
+
+services:
+  # PHP Application
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: ${APP_NAME:-laravel}-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./app:/var/www/app
+      - ./bootstrap:/var/www/bootstrap
+      - ./config:/var/www/config
+      - ./database:/var/www/database
+      - ./public:/var/www/public
+      - ./resources:/var/www/resources
+      - ./routes:/var/www/routes
+      - ./storage:/var/www/storage
+      - ./tests:/var/www/tests
+      - ./vendor:/var/www/vendor
+      - ./composer.json:/var/www/composer.json
+      - ./composer.lock:/var/www/composer.lock
+      - ./package.json:/var/www/package.json
+      - ./package-lock.json:/var/www/package-lock.json
+      - ./vite.config.ts:/var/www/vite.config.ts
+      - ./tsconfig.json:/var/www/tsconfig.json
+      - ./artisan:/var/www/artisan
+    networks:
+      - laravel-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  # Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: ${APP_NAME:-laravel}-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./public:/var/www/public
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d/
+    networks:
+      - laravel-network
+    depends_on:
+      - app
+
+  # MySQL Service
+  mysql:
+    image: mysql:8.0
+    container_name: ${APP_NAME:-laravel}-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - laravel-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Redis Service
+  redis:
+    image: redis:alpine
+    container_name: ${APP_NAME:-laravel}-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - laravel-network
+
+  # Laravel Reverb Service
+  reverb:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: ${APP_NAME:-laravel}-reverb
+    restart: unless-stopped
+    working_dir: /var/www/
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    volumes:
+      - ./app:/var/www/app
+      - ./bootstrap:/var/www/bootstrap
+      - ./config:/var/www/config
+      - ./database:/var/www/database
+      - ./public:/var/www/public
+      - ./resources:/var/www/resources
+      - ./routes:/var/www/routes
+      - ./storage:/var/www/storage
+      - ./tests:/var/www/tests
+      - ./vendor:/var/www/vendor
+      - ./composer.json:/var/www/composer.json
+      - ./composer.lock:/var/www/composer.lock
+      - ./package.json:/var/www/package.json
+      - ./package-lock.json:/var/www/package-lock.json
+      - ./vite.config.ts:/var/www/vite.config.ts
+      - ./tsconfig.json:/var/www/tsconfig.json
+      - ./artisan:/var/www/artisan
+    networks:
+      - laravel-network
+    depends_on:
+      - app
+
+  # Queue Worker Service
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: ${APP_NAME:-laravel}-queue
+    restart: unless-stopped
+    working_dir: /var/www/
+    command: php artisan queue:work --tries=3
+    volumes:
+      - ./app:/var/www/app
+      - ./bootstrap:/var/www/bootstrap
+      - ./config:/var/www/config
+      - ./database:/var/www/database
+      - ./public:/var/www/public
+      - ./resources:/var/www/resources
+      - ./routes:/var/www/routes
+      - ./storage:/var/www/storage
+      - ./tests:/var/www/tests
+      - ./vendor:/var/www/vendor
+      - ./composer.json:/var/www/composer.json
+      - ./composer.lock:/var/www/composer.lock
+      - ./package.json:/var/www/package.json
+      - ./package-lock.json:/var/www/package-lock.json
+      - ./vite.config.ts:/var/www/vite.config.ts
+      - ./tsconfig.json:/var/www/tsconfig.json
+      - ./artisan:/var/www/artisan
+    networks:
+      - laravel-network
+    depends_on:
+      - app
+      - redis
+
+networks:
+  laravel-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local 
