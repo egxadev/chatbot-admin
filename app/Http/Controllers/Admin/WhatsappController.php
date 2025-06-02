@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Events\QrCodeReceived;
-
+use App\Traits\ResponseFormatter;
 class WhatsappController extends Controller
 {
     /**
@@ -46,10 +46,10 @@ class WhatsappController extends Controller
 
             QrCodeReceived::dispatch($decryptedQR);
 
-            return response()->json(responseSuccess('QR code received.'));
+            return response()->json(ResponseFormatter::successResponse('QR code received.'));
         } catch (\Exception $e) {
             \Log::error($e->getMessage());
-            return response()->json(responseError('Failed to process QR code'));
+            return response()->json(ResponseFormatter::errorResponse('Failed to process QR code'));
         }
     }
 }
