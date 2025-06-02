@@ -8,6 +8,8 @@ use App\Events\QrCodeReceived;
 use App\Traits\ResponseFormatter;
 class WhatsappController extends Controller
 {
+    use ResponseFormatter;
+
     /**
      * Display QR code scanning page.
      * 
@@ -46,10 +48,10 @@ class WhatsappController extends Controller
 
             QrCodeReceived::dispatch($decryptedQR);
 
-            return response()->json(ResponseFormatter::successResponse('QR code received.'));
+            return response()->json($this->successResponse('QR code received.'));
         } catch (\Exception $e) {
             \Log::error($e->getMessage());
-            return response()->json(ResponseFormatter::errorResponse('Failed to process QR code'));
+            return response()->json($this->errorResponse('Failed to process QR code'));
         }
     }
 }
